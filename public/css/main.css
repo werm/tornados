@@ -133,7 +133,7 @@ i {
 }
 
 /* MAP */
-#map { height: 480px; }
+#map-canvas, #map { height: 480px; }
 
 .spinner {
   width: 30px;

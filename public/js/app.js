@@ -4,9 +4,16 @@ var app = app || {};
 //   $('#konami').removeClass('hidden').delay(2000).fadeOut();
 // });
 
-$(function() {
+var userLat;
+var userLon;
 
-  var map = L.map('map').setView([39.50, -98.35], 4);
+$(function() {
+  navigator.geolocation.getCurrentPosition(function(position) {
+    var userLat = position.coords.latitude;
+    var userLon = position.coords.longitude;
+  });
+
+  var map = L.map('map').setView([userLat, userLon], 4);
 
   L.tileLayer.provider('Nokia.terrainDay', {
       devID: 'ke5fO19txNsmvco1p6NB',
@@ -38,13 +45,13 @@ $(function() {
                 var dateTime = dateArr.join(" ");
 
               if(val.f === 5){
-                  $.get('http://maps.googleapis.com/maps/api/geocode/json?latlng='+val.slat+','+val.slon+'&sensor=false', function(place){
-                    $.each(place.results, function(k, v){
-                      console.log(v[4].formatted_address)
-                      // var marker = L.marker([val.slat, val.slon], {icon: tornadoIcon}).addTo(map);;
-                      // marker.bindPopup("<strong>F"+val.f+"</strong><br><strong>"+v[4].formatted_address+"</strong><br>Dead: "+val.fat+"<br>Traveled: "+val.len+" miles<br>"+moment(dateTime).format('MM/DD/YYYY hh:mm a'))
-                    })
-                  });
+                  // $.get('http://maps.googleapis.com/maps/api/geocode/json?latlng='+val.slat+','+val.slon+'&sensor=false', function(place){
+                  //   $.each(place.results, function(k, v){
+                  //     console.log(v[4].formatted_address)
+                  //     var marker = L.marker([val.slat, val.slon], {icon: tornadoIcon}).addTo(map);
+                  //     marker.bindPopup("<strong>F"+val.f+"</strong><br><strong>"+v[4].formatted_address+"</strong><br>Dead: "+val.fat+"<br>Traveled: "+val.len+" miles<br>"+moment(dateTime).format('MM/DD/YYYY hh:mm a'))
+                  //   })
+                  // });
                   var lineColor = '#b00';
                 } else if(val.f === 4){
                   var lineColor = '#e00';

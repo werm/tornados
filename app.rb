@@ -44,7 +44,7 @@ end # /helpers
 #############
 
 get "/api/tornados" do
-  @tornados = Tornado.limit('1000').to_json
+  @tornados = Tornado.limit('10000').to_json
 end
 
 get "/api/tornados/:id" do

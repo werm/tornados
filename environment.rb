@@ -4,7 +4,7 @@
 # end
 #
 configure :development do
-   db = URI.parse(ENV['DATABASE_URL'] || 'mysql://localhost:3306/ruby_cms')
+   db = URI.parse(ENV['DATABASE_URL'] || 'mysql://localhost:3306/tornado_db')
 
  ActiveRecord::Base.establish_connection(
    :adapter  => 'mysql2',
@@ -17,7 +17,7 @@ configure :development do
 end
 
 configure :production do
- db = URI.parse(ENV['DATABASE_URL'] || 'mysql:///localhost/ruby_cms')
+ db = URI.parse(ENV['DATABASE_URL'] || 'mysql:///localhost/tornado_db')
 
  ActiveRecord::Base.establish_connection(
    :adapter  => db.scheme == 'mysql2' ? 'mysql2' : db.scheme,

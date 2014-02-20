@@ -12,18 +12,6 @@
 
 ActiveRecord::Schema.define(version: 20140219125040) do
 
-  create_table "posts", force: true do |t|
-    t.string   "title"
-    t.text     "body"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.boolean  "public"
-    t.datetime "published_at"
-    t.string   "image"
-    t.string   "category"
-    t.string   "author"
-  end
-
   create_table "tornados", force: true do |t|
     t.integer  "om"
     t.integer  "yr"
