@@ -1,0 +1,11 @@
+{
+  "name": "ruby_cms",
+  "version": "0.0.1",
+  "dependencies": {
+    "momentjs": "",
+    "moment-timezone": "",
+    "jquery": "",
+    "underscore": "",
+    "backbone": ""
+  }
+}

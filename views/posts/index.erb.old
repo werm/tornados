@@ -1,0 +1,15 @@
+<% @posts.each do |tornado| %>
+  <h1><a href="/posts/<%= tornado.id %>"><%=h tornado.title %></a></h1>
+  <p class="lead">by <a href="#">Author Name</a></p>
+  <hr>
+  <p><span class="glyphicon glyphicon-time"></span> Tornadoed on <span class="dateTime"><%=h tornado.created_at.strftime("%m/%d/%Y %H:%M") %></span></p>
+  <p><%= @posted %></p>
+  <p class="timezone"></p>
+  <hr>
+  <img src="http://placehold.it/900x300" class="img-responsive">
+  <hr>
+  <p><%= tornado.body %></p>
+  <a class="btn btn-primary" href="#">Read More <span class="glyphicon glyphicon-chevron-right"></span></a>
+            
+  <hr>
+<% end %>

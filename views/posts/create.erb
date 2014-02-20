@@ -1,0 +1,15 @@
+<h2>Create Tornado</h2>
+<br/>
+<form action="/posts" method="tornado"role="form">
+ <div class="form-group">
+   <label for="post_title">Title:</label>
+   <br>
+   <input id="post_title" class="form-control" name="tornado[title]" type="text" value="<%= @tornado.title %>" style="width=90%"/>
+ </div>
+ <div class="form-group">
+   <label for="post_body">Body:</label>
+   <br>
+   <textarea id="post_body" name="tornado[body]" class="form-control" rows="10"><%= @tornado.body %></textarea>
+ </div>
+ <button type="submit" class="btn btn-success">Submit</button>
+</form>
