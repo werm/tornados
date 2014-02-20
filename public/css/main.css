@@ -135,6 +135,13 @@ i {
 /* MAP */
 #map { height: 480px; }
 
+.flag {
+  padding-right: 10px;
+  margin-top: -4px;
+}
+
+#states { width: 100%; }
+
 .spinner {
   width: 30px;
   height: 30px;

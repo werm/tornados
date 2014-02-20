@@ -44,7 +44,19 @@ end # /helpers
 #############
 
 get "/api/tornados" do
-  @tornados = Tornado.limit('1000').to_json
+  @tornados = Tornado.limit('500').order("yr desc").to_json
+end
+
+get '/api/state' do
+  states = Tornado.select(:st).order('st asc').uniq
+
+  states.to_json
+  end
+
+get "/api/state/:state" do
+  state = params[:state]
+  @tornados = Tornado.where(:st => state)
+  @tornados.to_json
 end
 
 get "/api/tornados/:id" do
