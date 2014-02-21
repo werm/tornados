@@ -9,8 +9,6 @@ require 'sinatra/redirect_with_flash'
 require 'date'
 require 'time'
 
-enable :sessions
-
 class Tornado < ActiveRecord::Base
 
 end
@@ -48,7 +46,7 @@ end # /helpers
 #############
 
 get "/api/tornados" do
-  @tornados = Tornado.limit('500').order("yr desc").to_json
+  @tornados = Tornado.limit('1000').order("yr desc").to_json
 end
 
 get '/api/state' do
@@ -57,6 +55,7 @@ get '/api/state' do
 end
 
 get "/api/state/:state" do
+  content_type :json
   state = params[:state]
   @state = State.where(:state => state)
   @state.to_json

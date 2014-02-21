@@ -3,15 +3,26 @@ $(function() {
 var map;
 var tornadoIcon;
 
-var buildMap = function(view){
-    map = L.map('map')
+var buildMap = function(view, zoom){
 
-    map.locate({setView: view, maxZoom: 4})
+    if($('#map').length > 0){
+      $("#map").remove();
+      $('<div id="map" style="height: 480px"></div>').prependTo(".map_container"); 
+    }
 
-    L.tileLayer.provider('Nokia.terrainDay', {
-        devID: 'ke5fO19txNsmvco1p6NB',
-        appID: 'vJxW7dLyFZ8dWCFAsobg_A'
-      }).addTo(map);
+    map = new L.map('map', {
+      scrollWheelZoom: false
+    })
+
+    var google = new L.Google('ROAD');
+
+    map.addLayer(google);
+
+    if(zoom === ''){
+      map.locate({setView: view, maxZoom: 8});
+    } else {
+      map.locate({setView: view, maxZoom: zoom});
+    }
 
   tornadoIcon = L.icon({
       iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAXCAYAAADk3wSdAAACXklEQVQ4T52UvWtaYRTGz6tVEQWDODhpMujSIX4UHIrUyaVCcbFDh7TQPWYrdEiyFDol/QOkpUjnLm5KrZNItTezhdYMKgjaoAgWP/oc8cr1Ru+9yQURvef8znOe95xXkIEnhMdut7+dTqdP5/O53WKx9PH5PBwOzyVJ+qtGCD1mJBJ5KYT4aLVaye/3k9PppE6nQ91ul2w22/V4PH4C8B8l5xYUohImk+kIoP3FYiHhOxsIBCgWizFkndtut6lUKhFiflWr1cBOKAPNZvM3QHsul0sMBgOPw+GgdDq9AZQBrVaLisUi/0zX6/Wv8v8bStFqGWoeZTIZB6viJIZ6PJ6dLuVyOY75UqlUXmxAoXAP6o7R6lk4HCbA9axevy8UCtTr9f7NZrPnslrBQG4ZUSGfz0cMlZXBL0IhzQLcTaPRoH6/T+C8r9VqbwRUnSHxNB6PUzAYNKxQHYj2qdlsEhSHGSpB4cNkMvlAHWhEqZwzmUwon88T5vmDiEaji10+GoEqY9hfTMwVKy17vd7HqVTqltK7eCErZV8ZmoWnF/fxVKlS4enB8mhhAQ/uM7fbvVzFbQ+UXGPvJ/DsAO/XXWH/lys7Go14u04wCZfreeEdx6y+huoIXxpGW8fFMgDsB4q+wx1Q5jzNIVwtxW8U2pOLAPAKaj5pFdWEwhZOPlIAJEC/A5q9F3S1aQkkM9jFEACvYE1i2x2qLKLXfggj8nOVcINtCanvzm2KNaHyuCGRgaxQMnKAelC+pA95n40CNU9/5SmPi+5pq9XvVMpzy8F643MnT6F038ihbIP+B+sUFYNgB+nzAAAAAElFTkSuQmCC',
@@ -29,8 +40,15 @@ var getTwisters = function(url){
         dataType: 'JSON',
         success: function(data){
           $.each(data, function(key, val){
-              if(val.elat === '0'){
-                // var marker = L.marker([val.slat, val.slon]).addTo(map);
+              if(val.elat === '0' && val.slat !== '0'){
+                var cmarker = L.circleMarker([val.slat, val.slon], 
+                  { 
+                    stroke: false, 
+                    clickable: true 
+                  });
+                var popupContent = '<strong>F'+val.f+'</strong><br>'+val.date
+                cmarker.addTo(map);
+                cmarker.bindPopup(popupContent)
               } else {
                 var startPt = L.latLng(val.slat, val.slon)
                 var endPt = L.latLng(val.elat, val.elon);
@@ -82,8 +100,10 @@ var getTwisters = function(url){
       });
   } // getTwisters
 
-  buildMap(true);
+  buildMap(true, 4);
   getTwisters('/api/tornados');
+
+  map.on('click', function(e) { $('.coords').text("Lat, Lon : " + e.latlng.lat + ", " + e.latlng.lng) })
 
     $.getJSON( "/api/state", function(data) {
       var opts = [];
@@ -111,19 +131,23 @@ var getTwisters = function(url){
     });
 
     $(document).on('change', '#state_select', function(){
-      $("#map").remove();
-      $('<div id="map" style="height: 480px"></div>').prependTo(".map_container"); 
-
       state = $('#state_select').val();
-      $.get('/api/state/'+state, function(key, data){
-        buildMap(true)
-        lat = data[1]
-        lon = data[2]
-        console.log(lat+" - "+lon)
-        map.panTo([lat,lon])
+      $.get('/api/state/'+state, function(data){
+        buildMap(true, 8)
+        var geoStyle = {
+            "color": "#ff7800",
+            "weight": 5,
+            "opacity": 0.45
+        };
+        var stateJson = new L.GeoJSON.AJAX('/data/states/'+state+'.geo.json', { style: geoStyle });
+
+        stateJson.addTo(map);
+        var overlays={
+          "json": stateJson
+        }
       })
       getTwisters('/api/state_tornado/' + state)
-
+    
     });
 
     $(":file").filestyle({
