@@ -1,28 +1,31 @@
 $(function() {
 
-    var map = L.map('map')
+var map;
+var tornadoIcon;
 
-    map.locate({setView: true, maxZoom: 4})
+var buildMap = function(view){
+    map = L.map('map')
+
+    map.locate({setView: view, maxZoom: 4})
 
     L.tileLayer.provider('Nokia.terrainDay', {
         devID: 'ke5fO19txNsmvco1p6NB',
         appID: 'vJxW7dLyFZ8dWCFAsobg_A'
       }).addTo(map);
 
-  var tornadoIcon = L.icon({
+  tornadoIcon = L.icon({
       iconUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABUAAAAXCAYAAADk3wSdAAACXklEQVQ4T52UvWtaYRTGz6tVEQWDODhpMujSIX4UHIrUyaVCcbFDh7TQPWYrdEiyFDol/QOkpUjnLm5KrZNItTezhdYMKgjaoAgWP/oc8cr1Ru+9yQURvef8znOe95xXkIEnhMdut7+dTqdP5/O53WKx9PH5PBwOzyVJ+qtGCD1mJBJ5KYT4aLVaye/3k9PppE6nQ91ul2w22/V4PH4C8B8l5xYUohImk+kIoP3FYiHhOxsIBCgWizFkndtut6lUKhFiflWr1cBOKAPNZvM3QHsul0sMBgOPw+GgdDq9AZQBrVaLisUi/0zX6/Wv8v8bStFqGWoeZTIZB6viJIZ6PJ6dLuVyOY75UqlUXmxAoXAP6o7R6lk4HCbA9axevy8UCtTr9f7NZrPnslrBQG4ZUSGfz0cMlZXBL0IhzQLcTaPRoH6/T+C8r9VqbwRUnSHxNB6PUzAYNKxQHYj2qdlsEhSHGSpB4cNkMvlAHWhEqZwzmUwon88T5vmDiEaji10+GoEqY9hfTMwVKy17vd7HqVTqltK7eCErZV8ZmoWnF/fxVKlS4enB8mhhAQ/uM7fbvVzFbQ+UXGPvJ/DsAO/XXWH/lys7Go14u04wCZfreeEdx6y+huoIXxpGW8fFMgDsB4q+wx1Q5jzNIVwtxW8U2pOLAPAKaj5pFdWEwhZOPlIAJEC/A5q9F3S1aQkkM9jFEACvYE1i2x2qLKLXfggj8nOVcINtCanvzm2KNaHyuCGRgaxQMnKAelC+pA95n40CNU9/5SmPi+5pq9XvVMpzy8F643MnT6F038ihbIP+B+sUFYNgB+nzAAAAAElFTkSuQmCC',
 
       iconSize:     [24,24], // size of the icon
       iconAnchor:   [12, 24], // point of the icon which will correspond to marker's location
       popupAnchor:  [-3, -32] // point from which the popup should open relative to the iconAnchor
   });
+}
 
-
-  function getTwisters(url){
+var getTwisters = function(url){
       $.ajax({
         url: url,
         type: 'GET',
-        // data: { limit: 5000 },
         dataType: 'JSON',
         success: function(data){
           $.each(data, function(key, val){
@@ -79,25 +82,13 @@ $(function() {
       });
   } // getTwisters
 
-  function clearMap() {
-    for(i in map._layers) {
-      if(map._layers[i]._path != undefined) {
-        try {
-          map.removeLayer(map._layers[i]);
-        }
-        catch(e) {
-          console.log("problem with " + e + map._layers[i]);
-        }
-      }
-    }
-  }
-
-    getTwisters('/api/tornados')
+  buildMap(true);
+  getTwisters('/api/tornados');
 
     $.getJSON( "/api/state", function(data) {
       var opts = [];
       $.each(data, function(key, val){
-        opts.push( '<option data-state="'+val.st+'" val="' + val.st + '" >' + val.st + '</li>' );
+        opts.push( '<option data-state="'+val.state+'" value="' + val.state + '" >' + val.full_name + '</li>' );
       });
       $( "<select/>", {
         // "class": "col-lg-2",
@@ -120,17 +111,19 @@ $(function() {
     });
 
     $(document).on('change', '#state_select', function(){
-      console.log("State Select changed!")
       $("#map").remove();
       $('<div id="map" style="height: 480px"></div>').prependTo(".map_container"); 
-      var map = L.map('map')
 
-      map.locate({setView: true, maxZoom: 4})
+      state = $('#state_select').val();
+      $.get('/api/state/'+state, function(key, data){
+        buildMap(true)
+        lat = data[1]
+        lon = data[2]
+        console.log(lat+" - "+lon)
+        map.panTo([lat,lon])
+      })
+      getTwisters('/api/state_tornado/' + state)
 
-      L.tileLayer.provider('Nokia.terrainDay', {
-          devID: 'ke5fO19txNsmvco1p6NB',
-          appID: 'vJxW7dLyFZ8dWCFAsobg_A'
-        }).addTo(map);
     });
 
     $(":file").filestyle({
