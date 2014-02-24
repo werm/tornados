@@ -1,92 +1,121 @@
-    var map;
-    var polyline;
+var geocoder;
+var map;
+var infowindow = new google.maps.InfoWindow();
+var marker;
 
-    $(document).ready(function(){
+$(function(){
+  var options = {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0
+  };
 
-    var getTwisters = function(url){
-          $.ajax({
-            url: url,
-            type: 'GET',
-            dataType: 'JSON',
-            success: function(data){
-              $.each(data, function(key, val){
-                  if(val.elat === '0' && val.slat !== '0'){
-                    console.log(val.id)
-                  } else {
-                    var dateArr = new Array(val.date +" "+val.time)
-                    var dateTime = dateArr.join(" ");
+  function success(pos) {
+    var crd = pos.coords;
 
-                  if(val.f === 5){
-                      $.get('http://maps.googleapis.com/maps/api/geocode/json?latlng='+val.slat+','+val.slon+'&sensor=true', function(place){
-                        var address = [];
-                        for (i = 0; i < place.results.length; i++) {
-                          address[i] = place.results[i].formatted_address;
-                          map.addMarker({
-                            lat: val.slat,
-                            lng: val.slon,
-                            title: address,
-                            click: function(e) {
-                              console.log(address)
-                            }
-                          });
-                        }
-                      }, 'json');
-                      
-                      var lineColor = '#b00';
-                    } else if(val.f === 4){
-                      var lineColor = '#e00';
-                    } else if(val.f === 3){
-                      var lineColor = '#f22';
-                    } else if(val.f === 2){
-                      var lineColor = '#f55';
-                    } else if(val.f === 1){
-                      var lineColor = '#f77';
-                    }  else if(val.f === 0){
-                      var lineColor = '#f99';
-                    } else {
-                      var lineColor = '#9f5cfd'
-                    }
+    console.log('Your current position is:');
+    console.log('Latitude : ' + crd.latitude);
+    console.log('Longitude: ' + crd.longitude);
+    console.log('More or less ' + crd.accuracy + ' meters.');
+  };
 
-                  path = [[val.slat, val.slon], [val.elat, val.elon]];
+  function error(err) {
+    console.warn('ERROR(' + err.code + '): ' + err.message);
+  };
 
-                  polyline = map.drawPolyline({
-                    path: path,
-                    strokeColor: lineColor,
-                    strokeOpacity: 0.8,
-                    strokeWeight: 4
-                  });
-                }
-                });
-            }
+  navigator.geolocation.getCurrentPosition(success, error, options);
+
+  var map;
+
+  function initialize() {
+    geocoder = new google.maps.Geocoder();
+    var mapOptions = {
+      zoom: 4
+    };
+    map = new google.maps.Map(document.getElementById('map-canvas'),
+        mapOptions);
+
+    $.get('/api/tornados', function(data){
+      $.each(data, function(key, val){
+        if(val.elat === '0'){
+          var dateArr = new Array(val.date +" "+val.time)
+          var dateTime = dateArr.join(" ");
+          var startLatLng = new google.maps.LatLng(val.slat, val.slon);
+          var img = 'img/marker.png';       
+          var tornadoInfo = "<strong>F"+val.f+"</strong><br>Dead: "+val.fat+"<br>Traveled: "+val.len+" miles<br>"+moment(dateTime).format('MM/DD/YYYY hh:mm a')
+          var infowindow = new google.maps.InfoWindow({
+              content: tornadoInfo
           });
-        google.maps.event.addListener(polyline, 'click', function() {
-          console.log('Polyline clicked!');
-        });
-      } // getTwisters
+          var infowindow = new google.maps.InfoWindow({
+               content: tornadoInfo
+           });
 
-      $('#map').addClass('sr-only')
-      GMaps.geolocate({
-        success: function(position){
-          map = new GMaps({
-            div: '#map',
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-            zoom: 4
+          var customMarker = new google.maps.Marker({
+              position: startLatLng,
+              map: map,
+              icon: img
+          });   
+
+          google.maps.event.addListener(marker, 'click', function() {
+            infowindow.open(map,customMarker);
           });
-          map.setCenter(position.coords.latitude, position.coords.longitude);
-
-          // $.
-        },
-        error: function(error){
-          alert('Geolocation failed: '+error.message);
-        },
-        not_supported: function(){
-          alert("Your browser does not support geolocation");
-        },
-        always: function(){
-          console.log("Done");
-          getTwisters('/api/tornados');
-          $('#map').removeClass('sr-only').css('width','100%');
+          // var marker = L.marker([val.slat, val.slon]).addTo(map);
+        } else {
+          var tornadoCoordinates = [
+            new google.maps.LatLng(val.slat, val.slon),
+            new google.maps.LatLng(val.elat, val.elon)
+          ];
+          var tornadoPath = new google.maps.Polyline({
+            path: tornadoCoordinates,
+            geodesic: true,
+            strokeColor: '#FF0000',
+            strokeOpacity: 1.0,
+            strokeWeight: 2
+          });
+          tornadoPath.setMap(map);
         }
       });
-    });
+    },'json');
+    // Try HTML5 geolocation
+    if(navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var pos = new google.maps.LatLng(position.coords.latitude,
+                                         position.coords.longitude);
+
+        // var infowindow = new google.maps.InfoWindow({
+        //   map: map,
+        //   position: pos,
+        //   content: 'Location found using HTML5.'
+        // });
+
+        map.setCenter(pos);
+      }, function() {
+        handleNoGeolocation(true);
+      });
+    } else {
+      // Browser doesn't support Geolocation
+      handleNoGeolocation(false);
+    }
+  }
+
+  function handleNoGeolocation(errorFlag) {
+    if (errorFlag) {
+      var content = 'Error: The Geolocation service failed.';
+    } else {
+      var content = 'Error: Your browser doesn\'t support geolocation.';
+    }
+
+    var options = {
+      map: map,
+      position: new google.maps.LatLng(60, 105),
+      content: content
+    };
+
+    var infowindow = new google.maps.InfoWindow(options);
+    map.setCenter(options.position);
+  }
+
+  google.maps.event.addDomListener(window, 'load', initialize);
+
+
+});

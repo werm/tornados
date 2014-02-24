@@ -133,7 +133,7 @@ i {
 }
 
 /* MAP */
-#map { height: 480px; }
+#map-canvas, #map { height: 480px; }
 
 .flag {
   padding-right: 10px;
