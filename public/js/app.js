@@ -6,21 +6,27 @@ var app = app || {};
 
 var userLat;
 var userLon;
+var tornadoIcon;
 
 $(function() {
+
+  //Populate date picker
+  for (i = new Date().getFullYear(); i > 1956; i--){
+      $('#yearpicker').append($('<option />').val(i).html(i));
+  }
+
   navigator.geolocation.getCurrentPosition(function(position) {
-    var userLat = position.coords.latitude;
-    var userLon = position.coords.longitude;
-  });
+    userLat = position.coords.latitude;
+    userLon = position.coords.longitude;
 
-  var map = L.map('map').setView([userLat, userLon], 4);
+    var mapboxTiles = L.tileLayer('https://{s}.tiles.mapbox.com/v3/werm82.hb7p0d1k/{z}/{x}/{y}.png', {
+        attribution: '<a href="http://www.mapbox.com/about/maps/" target="_blank">Terms &amp; Feedback</a>'
+    });
+    var map = L.map('map')
+        .addLayer(mapboxTiles)
+        .setView([userLat, userLon], 5);
 
-  L.tileLayer.provider('Nokia.terrainDay', {
-      devID: 'ke5fO19txNsmvco1p6NB',
-      appID: 'vJxW7dLyFZ8dWCFAsobg_A'
-    }).addTo(map);
-
-  var tornadoIcon = L.icon({
+  tornadoIcon = L.icon({
       iconUrl: 'img/tornado.png',
       shadowUrl: 'img/tornado_shadow.png',
 
@@ -31,51 +37,77 @@ $(function() {
       popupAnchor:  [-3, -32] // point from which the popup should open relative to the iconAnchor
   });
 
-      $.get('/api/tornados', function(data){
-      $.each(data, function(key, val){
-            var userLatLng = new google.maps.LatLng(val.slat, val.slon);
-              if(val.elat === '0'){
-                // var marker = L.marker([val.slat, val.slon]).addTo(map);
-              } else {
-                var startPt = L.latLng(val.slat, val.slon)
-                var endPt = L.latLng(val.elat, val.elon);
-                var pointList = [startPt, endPt];
+  var getTwisters = function(url){
 
-                var dateArr = new Array(val.date +" "+val.time)
-                var dateTime = dateArr.join(" ");
+        $.ajax({
+          url: url,
+          type: 'GET',
+          dataType: 'JSON',
+          success: function(data){
+            $.each(data, function(key, val){
+                if(val.elat === '0'){
+                  // var marker = L.marker([val.slat, val.slon]).addTo(map);
+                } else {
+                  var startPt = L.latLng(val.slat, val.slon)
+                  var endPt = L.latLng(val.elat, val.elon);
+                  var pointList = [startPt, endPt];
 
-              if(val.f === 5){
-                  // $.get('http://maps.googleapis.com/maps/api/geocode/json?latlng='+val.slat+','+val.slon+'&sensor=false', function(place){
-                  //   $.each(place.results, function(k, v){
-                  //     console.log(v[4].formatted_address)
-                  //     var marker = L.marker([val.slat, val.slon], {icon: tornadoIcon}).addTo(map);
-                  //     marker.bindPopup("<strong>F"+val.f+"</strong><br><strong>"+v[4].formatted_address+"</strong><br>Dead: "+val.fat+"<br>Traveled: "+val.len+" miles<br>"+moment(dateTime).format('MM/DD/YYYY hh:mm a'))
-                  //   })
-                  // });
-                  var lineColor = '#b00';
-                } else if(val.f === 4){
-                  var lineColor = '#e00';
-                } else if(val.f === 3){
-                  var lineColor = '#f22';
-                } else if(val.f === 2){
-                  var lineColor = '#f55';
-                } else if(val.f === 1){
-                  var lineColor = '#f77';
-                } 
+                  var dateArr = new Array(val.date +" "+val.time)
+                  var dateTime = dateArr.join(" ");
 
-                var path = new L.Polyline(pointList, {
-                  color: lineColor,
-                  weight: 2,
-                  opacity: 1,
-                  smoothFactor: 1
-                }).addTo(map);
-                path.bindPopup("<strong>F"+val.f+"</strong><br>Traveled: "+val.len+" miles<br>"+moment(dateTime).format('MM/DD/YYYY hh:mm a'))
+                if(val.f === 5){
+                    $.get('http://maps.googleapis.com/maps/api/geocode/json?latlng='+val.slat+','+val.slon+'&sensor=true', function(place){
+                      var address = [];
+                      for (i = 0; i < place.results.length; i++) {
+                        address[i] = place.results[i].formatted_address;
+                        // var marker = L.marker([val.slat, val.slon]).addTo(map);
+                        var marker = L.marker([val.slat, val.slon], {icon: tornadoIcon}).addTo(bigTornados);
+                        marker.bindPopup("<strong>F"+val.f+"</strong><br><strong>"+address[0]+"</strong><br>Fatalities: "+val.fat+"<br>Injuries: "+val.inj+"<br>Traveled: "+val.len+" miles<br>"+moment(dateTime).format('MM/DD/YYYY hh:mm a'));
+                      }
+                    }, 'json');
+                    
+                    var lineColor = '#b00';
+                    var lineWt = '4';
+                  } else if(val.f === 4){
+                    var lineColor = '#e00';
+                    var lineWt = '3.5';
+                  } else if(val.f === 3){
+                    var lineColor = '#f22';
+                    var lineWt = '3';
+                  } else if(val.f === 2){
+                    var lineColor = '#f55';
+                    var lineWt = '2.5';
+                  } else if(val.f === 1){
+                    var lineColor = '#f77';
+                    var lineWt = '2';
+                  }  else if(val.f === 0){
+                    var lineColor = '#f99';
+                    var lineWt = '1.5';
+                  } else {
+                    var lineColor = '#9f5cfd'
+                    var lineWt = '1';
+                  }
+
+                  var path = new L.Polyline(pointList, {
+                    color: lineColor,
+                    weight: lineWt,
+                    opacity: 1,
+                    smoothFactor: 1
+                  }).addTo(map);
+                  if(val.f === -9){
+                    path.bindPopup("<strong>Undetermined F Scale</strong><br>Traveled: "+val.len+" miles<br>"+moment(dateTime).format('MM/DD/YYYY hh:mm a'))
+                  } else {
+                  path.bindPopup("<strong>F"+val.f+"</strong><br>Fatalities: "+val.fat+"<br>Injuries: "+val.inj+"<br>Traveled: "+val.len+" miles<br>"+moment(dateTime).format('MM/DD/YYYY hh:mm a'));
+                }
               }
-            })
-        },
-        'json'
-    );
-
+              });
+          }
+        });
+      var bigTornados = L.layerGroup().addTo(map);
+    } // getTwisters
+ 
+ getTwisters('/api/tornados')
+});
     $(":file").filestyle({
         classButton: "btn btn-default",
         buttonText: "Add Image",

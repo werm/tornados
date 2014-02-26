@@ -32,15 +32,6 @@
   </div>
 
   <div class="container">
-
-    <div class="row">
-      <div class="col-lg-12">
-        
-        <div id="map"></div>
-        <!-- <div id="map-canvas"></div> -->
-
-      </div>
-    </div> <!-- .row -->
     <div class="row">
         <div class="col-lg-4">
 
@@ -48,17 +39,16 @@
             <div id="list"></div>
             
           </div><!-- /well -->
-
+        </div>
+        <div class="col-lg-4">
           <div class="well">
-            <h4>Blog Search</h4>
+            <h4>By Year</h4>
             <div class="input-group">
-              <input type="text" class="form-control">
-              <span class="input-group-btn">
-                <button class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
-              </span>
+              <select name="yearpicker" class="form-control" id="yearpicker"></select>
             </div><!-- /input-group -->
           </div><!-- /well -->
-
+        </div>
+        <div class="col-lg-4">
           <div class="well">
             <h4>Dev Testing</h4>
               <div class="row">
@@ -69,17 +59,28 @@
                   <p>End JSON: <span class="timerEnd"></span></p>
                 </div>
               </div>
-          </div><!-- /well -->
+            </div><!-- /well -->
+          </div>
     </div>
         
   </div>
+    <div class="row">
+      <div class="col-lg-12">
+        
+        <!-- <div id="map"></div> -->
+        <!-- <div id="map-canvas"></div> -->
+
+      </div>
+    </div> <!-- .row -->
 
 <div id="konami" class="hidden">
   <h1>+ 30 lives!</h1>
 </div>
     <!-- View Templates
     ================================================== -->
-
+    <script type="javascript/template" id="map-template">
+      <div id="map"></div>
+    </script>
 
     <!-- Core JavaScript
     ================================================== -->
@@ -94,15 +95,17 @@
     <script src="/js/lib/underscore-min.js"></script>
     <script src="/js/lib/backbone-min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/backbone-forms/0.12.0/backbone-forms.min.js"></script>
-<!--    <script src="/js/models/tornado.js"></script>
+    <script src="/js/models/tornado.js"></script>
     <script src="/js/collections/tornados.js"></script>
     <script src="/js/views/tornado.js"></script>
     <script src="/js/views/tornados.js"></script>
-    <script src="/js/lib/dateFormat.js"></script>
+    <script src="/js/lib/backbone.googlemaps.js"></script>
+    <!--        <script src="/js/lib/dateFormat.js"></script>
     <script src="/js/lib/cheet.js"></script> -->
     <script src="http://maps.google.com/maps/api/js?key=AIzaSyBD_FPClBX2vlNUDqdahvY7MEzj1hDJJ5c&sensor=false"></script>
     <script src="http://cdn.leafletjs.com/leaflet-0.7.2/leaflet.js"></script>
     <script src="/js/lib/leaflet-providers.js"></script>
+    <script src="//rawgithub.com/calvinmetcalf/leaflet-ajax/master/dist/leaflet.ajax.min.js"></script>
     <script src="/js/app.js"></script>
 
 </body>

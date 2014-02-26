@@ -49,6 +49,13 @@ get "/api/tornados" do
   @tornados = Tornado.limit('1000').order("yr desc").to_json
 end
 
+get "/api/year/:year" do
+  content_type :json
+  year = params[:year]
+  @year = Tornado.where(:yr => year)
+  @year.to_json
+end
+
 get '/api/state' do
   @states = State.all
   @states.to_json
@@ -80,9 +87,13 @@ end
 
 # get ALL tornados
 get '/' do
-  File.read(File.join('public', 'index.html'))
+  File.read(File.join('public', 'app.html'))
+end
+
+get '/year/*' do
+  File.read(File.join('public', 'app.html'))
 end
 
 get '/tornado/*' do
-  File.read(File.join('public', 'index.html'))
+  File.read(File.join('public', 'app.html'))
 end

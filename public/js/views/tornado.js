@@ -2,11 +2,11 @@ var app = app || {};
 
 app.TornadoView = Backbone.View.extend({
     tagName: 'div',
-    className: 'postContainer',
-    template: _.template( $( '#postTemplate' ).html() ),
+    className: 'tornadoContainer',
+    template: _.template( $( '#map-template' ).html() ),
 
     events: {
-        'click .delete': 'deleteTornado'
+
     },
 
     render: function() {
