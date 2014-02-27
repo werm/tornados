@@ -121,7 +121,7 @@ i {
 }
 
 /* MAP */
-#map-canvas, #map { height: 100%; }
+#map-canvas, #home_map, #year_map { height: 100%; }
 
 .flag {
   padding-right: 10px;
@@ -130,11 +130,16 @@ i {
 
 #states { width: 100%; }
 
-#years {
+#controls {
   position: fixed;
   top: 10px;
-  left: 10px;
+  left: 2%;
   z-index: 999;
+  width: 96%;
+}
+
+#years {
+  width: 20%;
 }
 
 .spinner {
